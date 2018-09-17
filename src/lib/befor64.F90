@@ -11,6 +11,7 @@ public :: is_b64_initialized, b64_init
 public :: b64_encode, b64_encode_up
 public :: b64_decode, b64_decode_up
 public :: pack_data
+public :: b64_decoded_length
 
 logical       :: is_b64_initialized=.false. !< Flag for checking the initialization of the library.
 character(64) :: base64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" !< Base64 alphabet.
@@ -235,6 +236,22 @@ contains
    enddo
    if (padd>0) code(len(code)-padd+1:)=repeat('=',padd)
    endsubroutine encode_bits
+
+   !< Calculate the length of a decoded base64 string
+   !<
+   pure function b64_decoded_length(code) result(res)
+   implicit none
+   character(len=*),intent(in) :: code
+   integer(I8P) :: res
+   integer(I8P) :: l
+   l = len_trim(code)
+   if(code(max(1,l-1):l)=='==') then
+       l = l - 2
+   elseif(code(max(1,l):l)=='=') then
+       l = l - 1
+   endif
+   res = (3*l)/4
+   end function
 
    pure subroutine decode_bits(code, bits)
    !< Decode a base64 string into a sequence of bits stream.
